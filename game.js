@@ -3,8 +3,22 @@ const context = canvas.getContext("2d");
 const scoreElement = document.querySelector("#score");
 const levelElement = document.querySelector("#level");
 const gameOverElement = document.querySelector("#game-over");
+const finalScoreElement = document.querySelector("#final-score");
+const scoreForm = document.querySelector("#score-form");
+const playerNameInput = document.querySelector("#player-name");
 const restartButtons = document.querySelectorAll(".js-restart");
 const boardWrap = document.querySelector(".board-wrap");
+const menuToggle = document.querySelector("#menu-toggle");
+const menuPanel = document.querySelector("#menu-panel");
+const menuClose = document.querySelector("#menu-close");
+const resumeButton = document.querySelector("#resume-game");
+const newGameButton = document.querySelector("#new-game");
+const finishGameButton = document.querySelector("#finish-game");
+const leaderboardToggle = document.querySelector("#leaderboard-toggle");
+const leaderboardPanel = document.querySelector("#leaderboard-panel");
+const leaderboardList = document.querySelector("#leaderboard-list");
+const howToToggle = document.querySelector("#how-to-toggle");
+const howToPanel = document.querySelector("#how-to-panel");
 
 const columns = 10;
 const rows = 20;
@@ -66,6 +80,8 @@ let dropInterval = 700;
 let score = 0;
 let level = 1;
 let isGameOver = false;
+let isPaused = false;
+let scoreSaved = false;
 
 const lineScores = {
   1: 100,
@@ -73,6 +89,7 @@ const lineScores = {
   3: 500,
   4: 800
 };
+const leaderboardKey = "tetrisLeaderboardV2";
 
 function createBoard() {
   return Array.from({ length: rows }, () => Array(columns).fill(null));
@@ -155,7 +172,7 @@ function update(time = 0) {
   const deltaTime = time - previousTime;
   previousTime = time;
 
-  if (!isGameOver) {
+  if (!isGameOver && !isPaused) {
     dropCounter += deltaTime;
 
     if (dropCounter > dropInterval) {
@@ -168,7 +185,7 @@ function update(time = 0) {
 }
 
 function moveDown() {
-  if (isGameOver) {
+  if (isGameOver || isPaused) {
     return;
   }
 
@@ -190,7 +207,7 @@ function moveDown() {
 }
 
 function moveSideways(direction) {
-  if (isGameOver) {
+  if (isGameOver || isPaused) {
     return;
   }
 
@@ -202,7 +219,7 @@ function moveSideways(direction) {
 }
 
 function rotatePiece() {
-  if (isGameOver) {
+  if (isGameOver || isPaused) {
     return;
   }
 
@@ -297,13 +314,124 @@ function resetGame() {
   score = 0;
   level = 1;
   isGameOver = false;
+  isPaused = false;
+  scoreSaved = false;
   gameOverElement.classList.add("is-hidden");
+  scoreForm.classList.remove("is-hidden");
+  closeMenu(false);
+  updateMenuState();
   updateStats();
 }
 
+function stopBoardGesture(event) {
+  event.stopPropagation();
+}
+
 function endGame() {
+  if (isGameOver) {
+    return;
+  }
+
   isGameOver = true;
+  isPaused = false;
+  finalScoreElement.textContent = score;
+  scoreSaved = false;
+  scoreForm.classList.toggle("is-hidden", score <= 0);
   gameOverElement.classList.remove("is-hidden");
+  updateMenuState();
+}
+
+function openMenu() {
+  if (!isGameOver) {
+    isPaused = true;
+  }
+
+  menuPanel.classList.remove("is-hidden");
+  menuPanel.setAttribute("aria-hidden", "false");
+  menuToggle.setAttribute("aria-expanded", "true");
+  updateMenuState();
+  renderLeaderboard();
+}
+
+function closeMenu(shouldResume = true) {
+  menuPanel.classList.add("is-hidden");
+  menuPanel.setAttribute("aria-hidden", "true");
+  menuToggle.setAttribute("aria-expanded", "false");
+
+  if (shouldResume && !isGameOver) {
+    isPaused = false;
+  }
+}
+
+function updateMenuState() {
+  menuPanel.classList.toggle("game-is-over", isGameOver);
+}
+
+function getLeaderboard() {
+  try {
+    return JSON.parse(localStorage.getItem(leaderboardKey)) ?? [];
+  } catch {
+    return [];
+  }
+}
+
+function saveLeaderboard(entries) {
+  localStorage.setItem(leaderboardKey, JSON.stringify(entries));
+}
+
+function saveScore(playerName) {
+  if (scoreSaved || score <= 0) {
+    return;
+  }
+
+  const cleanName = playerName.trim() || "Player";
+  const nextEntries = [
+    ...getLeaderboard(),
+    {
+      name: cleanName.slice(0, 16),
+      score,
+      date: new Date().toISOString()
+    }
+  ]
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 20);
+
+  saveLeaderboard(nextEntries);
+  scoreSaved = true;
+  scoreForm.classList.add("is-hidden");
+  renderLeaderboard();
+}
+
+function renderLeaderboard() {
+  const entries = getLeaderboard().slice(0, 20);
+
+  if (entries.length === 0) {
+    leaderboardList.innerHTML = "<li>Пока нет результатов</li>";
+    return;
+  }
+
+  leaderboardList.innerHTML = entries
+    .map((entry) => `<li><strong>${escapeHtml(entry.name)}</strong> — ${entry.score}</li>`)
+    .join("");
+}
+
+function togglePanel(panel, button) {
+  const isHidden = panel.classList.toggle("is-hidden");
+  button.setAttribute("aria-expanded", String(!isHidden));
+}
+
+function escapeHtml(text) {
+  return text.replace(/[&<>"']/g, (character) => {
+    const symbols = {
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      "\"": "&quot;",
+      "'": "&#039;"
+    };
+
+    return symbols[character];
+  });
 }
 
 document.addEventListener("keydown", (event) => {
@@ -327,6 +455,14 @@ document.addEventListener("keydown", (event) => {
 
   if (event.code === "Space" || event.code === "ArrowUp") {
     rotatePiece();
+  }
+
+  if (event.code === "Escape") {
+    if (menuPanel.classList.contains("is-hidden")) {
+      openMenu();
+    } else {
+      closeMenu();
+    }
   }
 });
 
@@ -400,6 +536,32 @@ restartButtons.forEach((button) => {
   button.addEventListener("click", resetGame);
 });
 
+gameOverElement.addEventListener("pointerdown", stopBoardGesture);
+gameOverElement.addEventListener("pointermove", stopBoardGesture);
+gameOverElement.addEventListener("pointerup", stopBoardGesture);
+gameOverElement.addEventListener("click", stopBoardGesture);
+
+menuToggle.addEventListener("click", openMenu);
+menuClose.addEventListener("click", () => closeMenu());
+resumeButton.addEventListener("click", () => closeMenu());
+newGameButton.addEventListener("click", resetGame);
+finishGameButton.addEventListener("click", () => {
+  closeMenu(false);
+  endGame();
+});
+leaderboardToggle.addEventListener("click", () => {
+  renderLeaderboard();
+  togglePanel(leaderboardPanel, leaderboardToggle);
+});
+howToToggle.addEventListener("click", () => {
+  togglePanel(howToPanel, howToToggle);
+});
+
+scoreForm.addEventListener("submit", (event) => {
+  event.preventDefault();
+  saveScore(playerNameInput.value);
+});
+
 const canUseServiceWorker =
   window.location.protocol === "https:" ||
   window.location.hostname === "localhost" ||
@@ -410,4 +572,6 @@ if ("serviceWorker" in navigator && canUseServiceWorker) {
 }
 
 updateStats();
+updateMenuState();
+renderLeaderboard();
 update();

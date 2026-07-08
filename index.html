@@ -10,14 +10,18 @@
   <link rel="manifest" href="manifest.json">
   <link rel="icon" href="icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="icon.svg">
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css?v=15">
 </head>
 <body>
   <main class="game-shell">
     <section class="game-panel" aria-label="Tetris">
       <header class="game-header">
         <h1>Tetris</h1>
-        <p>Стрелки: движение, вниз: быстрее, пробел: поворот</p>
+        <button id="menu-toggle" class="icon-button" type="button" aria-label="Открыть меню" aria-expanded="false">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
       </header>
 
       <div class="stats" aria-label="Статистика игры">
@@ -31,18 +35,57 @@
         </div>
       </div>
 
-      <button class="restart-button js-restart" type="button">Новая игра</button>
-
       <div class="board-wrap">
         <canvas id="game" width="300" height="600" aria-label="Игровое поле 10 на 20"></canvas>
         <div id="game-over" class="game-over is-hidden" role="status" aria-live="polite">
           <h2>Game Over</h2>
+          <p>Очки: <strong id="final-score">0</strong></p>
+          <form id="score-form" class="score-form">
+            <label for="player-name">Ник</label>
+            <div class="score-row">
+              <input id="player-name" name="player-name" type="text" maxlength="16" autocomplete="nickname" placeholder="Player">
+              <button type="submit">Сохранить</button>
+            </div>
+          </form>
           <button class="js-restart" type="button">Новая игра</button>
+        </div>
+      </div>
+
+      <div id="menu-panel" class="menu-panel is-hidden" aria-hidden="true">
+        <div class="menu-content" role="dialog" aria-modal="true" aria-labelledby="menu-title">
+          <header class="menu-title-row">
+            <h2 id="menu-title">Меню</h2>
+            <button id="menu-close" class="icon-button close-button" type="button" aria-label="Закрыть меню">
+              <span></span>
+              <span></span>
+            </button>
+          </header>
+
+          <div class="menu-actions">
+            <button id="resume-game" type="button">Продолжить</button>
+            <button id="new-game" type="button">Начать новую игру</button>
+            <button id="finish-game" type="button">Закончить игру</button>
+            <button id="leaderboard-toggle" type="button" aria-expanded="false" aria-controls="leaderboard-panel">Лидерборд</button>
+            <button id="how-to-toggle" type="button" aria-expanded="false" aria-controls="how-to-panel">Как играть</button>
+          </div>
+
+          <section id="leaderboard-panel" class="leaderboard menu-section is-hidden" aria-labelledby="leaderboard-title">
+            <h3 id="leaderboard-title">Лидерборд</h3>
+            <ol id="leaderboard-list">
+              <li>Пока нет результатов</li>
+            </ol>
+          </section>
+
+          <section id="how-to-panel" class="how-to-play menu-section is-hidden" aria-labelledby="how-to-title">
+            <h3 id="how-to-title">Как играть</h3>
+            <p>Компьютер: стрелки влево и вправо двигают фигуру, стрелка вниз ускоряет, пробел или стрелка вверх поворачивает.</p>
+            <p>Телефон: свайп влево или вправо двигает фигуру, длинный свайп двигает дальше, свайп вниз ускоряет, тап поворачивает.</p>
+          </section>
         </div>
       </div>
     </section>
   </main>
 
-  <script src="game.js"></script>
+  <script src="game.js?v=15"></script>
 </body>
 </html>

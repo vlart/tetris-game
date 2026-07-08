@@ -15,65 +15,55 @@ body {
   min-height: 100svh;
   display: grid;
   place-items: center;
-  padding: 16px;
+  padding: 12px;
 }
 
 .game-panel {
+  position: relative;
   width: min(100%, 420px);
 }
 
 .game-header {
-  margin-bottom: 12px;
+  position: relative;
+  margin-bottom: 8px;
   text-align: center;
 }
 
 .game-header h1 {
-  margin: 0 0 6px;
-  font-size: 34px;
+  margin: 0;
+  font-size: 28px;
   font-weight: 800;
   letter-spacing: 0;
-}
-
-.game-header p {
-  margin: 0;
-  color: #c9d6df;
-  font-size: 15px;
-  line-height: 1.45;
 }
 
 .stats {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 10px;
-  margin-bottom: 12px;
+  gap: 8px;
+  margin-bottom: 8px;
 }
 
 .stats div {
   display: grid;
-  gap: 4px;
-  padding: 10px 12px;
+  gap: 2px;
+  padding: 7px 9px;
   background: #1f2d3a;
   border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .stats span {
   color: #c9d6df;
-  font-size: 13px;
+  font-size: 11px;
 }
 
 .stats strong {
-  font-size: 24px;
+  font-size: 18px;
   line-height: 1;
-}
-
-.restart-button {
-  width: 100%;
-  margin-bottom: 12px;
 }
 
 .board-wrap {
   position: relative;
-  width: min(100%, 300px, calc((100svh - 260px) / 2));
+  width: min(100%, 300px, calc((100svh - 130px) / 2));
   min-width: 170px;
   margin: 0 auto;
   touch-action: none;
@@ -125,6 +115,168 @@ button:focus-visible {
   background: #ffd166;
 }
 
+.icon-button {
+  position: absolute;
+  right: 0;
+  top: 0;
+  display: grid;
+  place-content: center;
+  gap: 5px;
+  width: 44px;
+  min-height: 44px;
+  padding: 0;
+  background: #1f2d3a;
+}
+
+.icon-button span {
+  display: block;
+  width: 22px;
+  height: 3px;
+  background: currentColor;
+}
+
+.close-button {
+  position: static;
+  background: transparent;
+}
+
+.close-button span {
+  grid-area: 1 / 1;
+}
+
+.close-button span:first-child {
+  transform: rotate(45deg);
+}
+
+.close-button span:last-child {
+  transform: rotate(-45deg);
+}
+
+.game-over p {
+  margin: 0;
+  color: #c9d6df;
+  font-size: 18px;
+}
+
+.score-form {
+  display: grid;
+  gap: 8px;
+  width: min(100%, 240px);
+}
+
+.score-form.is-hidden {
+  display: none;
+}
+
+.score-form label {
+  color: #c9d6df;
+  font-size: 13px;
+  text-align: left;
+}
+
+.score-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+}
+
+input {
+  min-width: 0;
+  min-height: 44px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  padding: 0 10px;
+  background: #17212b;
+  color: #f7f7f2;
+  font: inherit;
+}
+
+.menu-panel {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgba(16, 24, 32, 0.72);
+}
+
+.menu-panel.is-hidden {
+  display: none;
+}
+
+.menu-content {
+  width: min(100%, 420px);
+  max-height: calc(100svh - 32px);
+  overflow: auto;
+  padding: 18px;
+  background: #17212b;
+  border: 2px solid #f2aa4c;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45);
+}
+
+.menu-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.menu-title-row h2,
+.leaderboard h3,
+.how-to-play h3 {
+  margin: 0;
+  letter-spacing: 0;
+}
+
+.menu-actions {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.menu-panel.game-is-over #resume-game,
+.menu-panel.game-is-over #finish-game {
+  display: none;
+}
+
+.menu-section {
+  display: grid;
+  gap: 10px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.menu-section.is-hidden {
+  display: none;
+}
+
+.leaderboard {
+  margin-bottom: 16px;
+}
+
+.leaderboard ol {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding-left: 24px;
+}
+
+.leaderboard li {
+  color: #c9d6df;
+}
+
+.leaderboard strong {
+  color: #f7f7f2;
+}
+
+.how-to-play p {
+  margin: 0;
+  color: #c9d6df;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
 @media (min-width: 720px) and (min-height: 760px) {
   .game-shell {
     padding: 24px;
@@ -135,7 +287,7 @@ button:focus-visible {
   }
 
   .game-header h1 {
-    font-size: 40px;
+    font-size: 34px;
   }
 
   .board-wrap {
@@ -145,38 +297,30 @@ button:focus-visible {
 
 @media (max-width: 719px) {
   .board-wrap {
-    width: min(100%, 300px, calc((100svh - 284px) / 2));
+    width: min(100%, 300px, calc((100svh - 142px) / 2));
     min-width: 150px;
   }
 }
 
 @media (max-width: 380px), (max-height: 720px) {
   .game-shell {
-    padding: 10px;
+    padding: 8px;
   }
 
   .game-header h1 {
-    font-size: 28px;
-  }
-
-  .game-header p {
-    font-size: 13px;
+    font-size: 24px;
   }
 
   .stats {
-    gap: 8px;
-    margin-bottom: 8px;
+    gap: 6px;
+    margin-bottom: 6px;
   }
 
   .stats div {
-    padding: 8px 10px;
+    padding: 6px 8px;
   }
 
   .stats strong {
-    font-size: 20px;
-  }
-
-  .restart-button {
-    margin-bottom: 8px;
+    font-size: 17px;
   }
 }
