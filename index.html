@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#101820">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Tetris">
+  <title>Tetris Game</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icon.svg">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="game-shell">
+    <section class="game-panel" aria-label="Tetris">
+      <header class="game-header">
+        <h1>Tetris</h1>
+        <p>Стрелки: движение, вниз: быстрее, пробел: поворот</p>
+      </header>
+
+      <div class="stats" aria-label="Статистика игры">
+        <div>
+          <span>Очки</span>
+          <strong id="score">0</strong>
+        </div>
+        <div>
+          <span>Уровень</span>
+          <strong id="level">1</strong>
+        </div>
+      </div>
+
+      <button class="restart-button js-restart" type="button">Новая игра</button>
+
+      <div class="board-wrap">
+        <canvas id="game" width="300" height="600" aria-label="Игровое поле 10 на 20"></canvas>
+        <div id="game-over" class="game-over is-hidden" role="status" aria-live="polite">
+          <h2>Game Over</h2>
+          <button class="js-restart" type="button">Новая игра</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="game.js"></script>
+</body>
+</html>
