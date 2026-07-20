@@ -1,6 +1,9 @@
 const canvas = document.querySelector("#game");
 const context = canvas.getContext("2d");
+const nextCanvas = document.querySelector("#next-piece");
+const nextContext = nextCanvas.getContext("2d");
 const scoreElement = document.querySelector("#score");
+const bestScoreElement = document.querySelector("#best-score");
 const levelElement = document.querySelector("#level");
 const gameOverElement = document.querySelector("#game-over");
 const finalScoreElement = document.querySelector("#final-score");
@@ -74,6 +77,7 @@ const shapes = {
 
 const board = createBoard();
 let currentPiece = createPiece();
+let nextPiece = createPiece();
 let previousTime = 0;
 let dropCounter = 0;
 let dropInterval = 700;
@@ -116,6 +120,7 @@ function draw() {
   drawGrid();
   drawBoard();
   drawPiece(currentPiece);
+  drawNextPiece();
 }
 
 function drawGrid() {
@@ -168,6 +173,41 @@ function drawBlock(x, y, color) {
   context.fillRect(pixelX + 3, pixelY + 3, blockSize - 6, 5);
 }
 
+function drawNextPiece() {
+  const previewBlockSize = 28;
+  const filledCells = [];
+
+  nextPiece.shape.forEach((row, y) => {
+    row.forEach((cell, x) => {
+      if (cell) {
+        filledCells.push({ x, y });
+      }
+    });
+  });
+
+  const minX = Math.min(...filledCells.map((cell) => cell.x));
+  const maxX = Math.max(...filledCells.map((cell) => cell.x));
+  const minY = Math.min(...filledCells.map((cell) => cell.y));
+  const maxY = Math.max(...filledCells.map((cell) => cell.y));
+  const shapeWidth = (maxX - minX + 1) * previewBlockSize;
+  const shapeHeight = (maxY - minY + 1) * previewBlockSize;
+  const offsetX = (nextCanvas.width - shapeWidth) / 2;
+  const offsetY = (nextCanvas.height - shapeHeight) / 2;
+
+  nextContext.fillStyle = "#17212b";
+  nextContext.fillRect(0, 0, nextCanvas.width, nextCanvas.height);
+
+  filledCells.forEach((cell) => {
+    const pixelX = offsetX + (cell.x - minX) * previewBlockSize;
+    const pixelY = offsetY + (cell.y - minY) * previewBlockSize;
+
+    nextContext.fillStyle = nextPiece.color;
+    nextContext.fillRect(pixelX + 1, pixelY + 1, previewBlockSize - 2, previewBlockSize - 2);
+    nextContext.fillStyle = "rgba(255, 255, 255, 0.18)";
+    nextContext.fillRect(pixelX + 3, pixelY + 3, previewBlockSize - 6, 5);
+  });
+}
+
 function update(time = 0) {
   const deltaTime = time - previousTime;
   previousTime = time;
@@ -193,17 +233,36 @@ function moveDown() {
 
   if (collides(currentPiece)) {
     currentPiece.y -= 1;
-    lockPiece();
-    const clearedRows = clearFullRows();
-    addScore(clearedRows);
-    currentPiece = createPiece();
-
-    if (collides(currentPiece)) {
-      endGame();
-    }
+    settlePiece();
   }
 
   dropCounter = 0;
+}
+
+function hardDrop() {
+  if (isGameOver || isPaused) {
+    return;
+  }
+
+  while (!collides(currentPiece)) {
+    currentPiece.y += 1;
+  }
+
+  currentPiece.y -= 1;
+  settlePiece();
+  dropCounter = 0;
+}
+
+function settlePiece() {
+  lockPiece();
+  const clearedRows = clearFullRows();
+  addScore(clearedRows);
+  currentPiece = nextPiece;
+  nextPiece = createPiece();
+
+  if (collides(currentPiece)) {
+    endGame();
+  }
 }
 
 function moveSideways(direction) {
@@ -302,12 +361,14 @@ function addScore(clearedRows) {
 
 function updateStats() {
   scoreElement.textContent = score;
+  bestScoreElement.textContent = getBestScore();
   levelElement.textContent = level;
 }
 
 function resetGame() {
   board.forEach((row) => row.fill(null));
   currentPiece = createPiece();
+  nextPiece = createPiece();
   previousTime = 0;
   dropCounter = 0;
   dropInterval = 700;
@@ -324,7 +385,25 @@ function resetGame() {
 }
 
 function stopBoardGesture(event) {
+  if (event.cancelable) {
+    event.preventDefault();
+  }
+
   event.stopPropagation();
+}
+
+function preventBoardDefault(event) {
+  if (event.cancelable) {
+    event.preventDefault();
+  }
+}
+
+function preventBoardTouch(event) {
+  if (event.target.closest("input, button")) {
+    return;
+  }
+
+  preventBoardDefault(event);
 }
 
 function endGame() {
@@ -379,6 +458,10 @@ function saveLeaderboard(entries) {
   localStorage.setItem(leaderboardKey, JSON.stringify(entries));
 }
 
+function getBestScore() {
+  return getLeaderboard().reduce((bestScore, entry) => Math.max(bestScore, entry.score), 0);
+}
+
 function saveScore(playerName) {
   if (scoreSaved || score <= 0) {
     return;
@@ -399,6 +482,7 @@ function saveScore(playerName) {
   saveLeaderboard(nextEntries);
   scoreSaved = true;
   scoreForm.classList.add("is-hidden");
+  updateStats();
   renderLeaderboard();
 }
 
@@ -472,25 +556,48 @@ let touchStartTime = 0;
 let touchLastX = 0;
 let touchLastY = 0;
 let touchMoved = false;
+let touchHardDropped = false;
 
 const gestureStep = 32;
+const hardDropDistance = 120;
 const tapDistance = 12;
 
 boardWrap.addEventListener("pointerdown", (event) => {
+  preventBoardDefault(event);
   touchStartX = event.clientX;
   touchStartY = event.clientY;
   touchLastX = event.clientX;
   touchLastY = event.clientY;
   touchStartTime = Date.now();
   touchMoved = false;
+  touchHardDropped = false;
   boardWrap.setPointerCapture?.(event.pointerId);
 });
 
 boardWrap.addEventListener("pointermove", (event) => {
+  preventBoardDefault(event);
+
+  if (touchHardDropped) {
+    return;
+  }
+
+  const totalDeltaY = event.clientY - touchStartY;
   const deltaX = event.clientX - touchLastX;
   const deltaY = event.clientY - touchLastY;
   const distanceX = Math.abs(deltaX);
   const distanceY = Math.abs(deltaY);
+
+  if (
+    totalDeltaY >= hardDropDistance &&
+    Math.abs(totalDeltaY) > Math.abs(event.clientX - touchStartX)
+  ) {
+    hardDrop();
+    touchLastX = event.clientX;
+    touchLastY = event.clientY;
+    touchMoved = true;
+    touchHardDropped = true;
+    return;
+  }
 
   if (distanceX > distanceY && distanceX >= gestureStep) {
     const steps = Math.trunc(deltaX / gestureStep);
@@ -509,6 +616,7 @@ boardWrap.addEventListener("pointermove", (event) => {
 });
 
 boardWrap.addEventListener("pointerup", (event) => {
+  preventBoardDefault(event);
   const deltaX = event.clientX - touchStartX;
   const deltaY = event.clientY - touchStartY;
   const elapsed = Date.now() - touchStartTime;
@@ -523,8 +631,14 @@ boardWrap.addEventListener("pointerup", (event) => {
 });
 
 boardWrap.addEventListener("pointercancel", (event) => {
+  preventBoardDefault(event);
   boardWrap.releasePointerCapture?.(event.pointerId);
 });
+
+boardWrap.addEventListener("touchstart", preventBoardTouch, { passive: false });
+boardWrap.addEventListener("touchmove", preventBoardTouch, { passive: false });
+boardWrap.addEventListener("touchend", preventBoardTouch, { passive: false });
+boardWrap.addEventListener("contextmenu", preventBoardTouch);
 
 function repeatMove(times, move) {
   for (let step = 0; step < times; step++) {
@@ -574,4 +688,5 @@ if ("serviceWorker" in navigator && canUseServiceWorker) {
 updateStats();
 updateMenuState();
 renderLeaderboard();
+drawNextPiece();
 update();

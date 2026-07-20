@@ -2,21 +2,26 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <meta name="theme-color" content="#101820">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="Tetris">
   <title>Tetris Game</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Neucha&display=swap" rel="stylesheet">
   <link rel="manifest" href="manifest.json">
   <link rel="icon" href="icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="icon.svg">
-  <link rel="stylesheet" href="style.css?v=15">
+  <link rel="stylesheet" href="style.css?v=25">
 </head>
 <body>
   <main class="game-shell">
     <section class="game-panel" aria-label="Tetris">
       <header class="game-header">
-        <h1>Tetris</h1>
+        <h1>
+          <img class="game-logo" src="tetris-logo.png" alt="Тетрис">
+        </h1>
         <button id="menu-toggle" class="icon-button" type="button" aria-label="Открыть меню" aria-expanded="false">
           <span></span>
           <span></span>
@@ -24,30 +29,40 @@
         </button>
       </header>
 
-      <div class="stats" aria-label="Статистика игры">
-        <div>
-          <span>Очки</span>
-          <strong id="score">0</strong>
-        </div>
-        <div>
-          <span>Уровень</span>
-          <strong id="level">1</strong>
-        </div>
-      </div>
+      <div class="game-layout">
+        <aside class="side-panel" aria-label="Статистика игры">
+          <div class="info-block preview-block">
+            <span>Следующая</span>
+            <canvas id="next-piece" width="120" height="120" aria-label="Предпросмотр следующей фигуры"></canvas>
+          </div>
+          <div class="info-block stat-block">
+            <span>Очки</span>
+            <strong id="score">0</strong>
+          </div>
+          <div class="info-block stat-block">
+            <span>Рекорд</span>
+            <strong id="best-score">0</strong>
+          </div>
+          <div class="info-block stat-block">
+            <span>Уровень</span>
+            <strong id="level">1</strong>
+          </div>
+        </aside>
 
-      <div class="board-wrap">
-        <canvas id="game" width="300" height="600" aria-label="Игровое поле 10 на 20"></canvas>
-        <div id="game-over" class="game-over is-hidden" role="status" aria-live="polite">
-          <h2>Game Over</h2>
-          <p>Очки: <strong id="final-score">0</strong></p>
-          <form id="score-form" class="score-form">
-            <label for="player-name">Ник</label>
-            <div class="score-row">
-              <input id="player-name" name="player-name" type="text" maxlength="16" autocomplete="nickname" placeholder="Player">
-              <button type="submit">Сохранить</button>
-            </div>
-          </form>
-          <button class="js-restart" type="button">Новая игра</button>
+        <div class="board-wrap">
+          <canvas id="game" width="300" height="600" aria-label="Игровое поле 10 на 20"></canvas>
+          <div id="game-over" class="game-over is-hidden" role="status" aria-live="polite">
+            <h2>Game Over</h2>
+            <p>Очки: <strong id="final-score">0</strong></p>
+            <form id="score-form" class="score-form">
+              <label for="player-name">Ник</label>
+              <div class="score-row">
+                <input id="player-name" name="player-name" type="text" maxlength="16" autocomplete="nickname" placeholder="Player">
+                <button type="submit">Сохранить</button>
+              </div>
+            </form>
+            <button class="js-restart" type="button">Новая игра</button>
+          </div>
         </div>
       </div>
 
@@ -79,13 +94,13 @@
           <section id="how-to-panel" class="how-to-play menu-section is-hidden" aria-labelledby="how-to-title">
             <h3 id="how-to-title">Как играть</h3>
             <p>Компьютер: стрелки влево и вправо двигают фигуру, стрелка вниз ускоряет, пробел или стрелка вверх поворачивает.</p>
-            <p>Телефон: свайп влево или вправо двигает фигуру, длинный свайп двигает дальше, свайп вниз ускоряет, тап поворачивает.</p>
+            <p>Телефон: свайп влево или вправо двигает фигуру, длинный свайп двигает дальше, короткий свайп вниз ускоряет, длинный свайп вниз сразу роняет фигуру, тап поворачивает.</p>
           </section>
         </div>
       </div>
     </section>
   </main>
 
-  <script src="game.js?v=15"></script>
+  <script src="game.js?v=25"></script>
 </body>
 </html>

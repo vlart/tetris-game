@@ -2,13 +2,26 @@
   box-sizing: border-box;
 }
 
+html {
+  touch-action: manipulation;
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
 body {
   margin: 0;
   min-height: 100vh;
   background: #101820;
   color: #f7f7f2;
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: "Neucha", Arial, Helvetica, sans-serif;
   overscroll-behavior: none;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 .game-shell {
@@ -20,12 +33,16 @@ body {
 
 .game-panel {
   position: relative;
-  width: min(100%, 420px);
+  width: min(100%, 500px);
+  min-width: 450px;
 }
 
 .game-header {
   position: relative;
-  margin-bottom: 8px;
+  display: grid;
+  min-height: 44px;
+  place-items: center;
+  margin-bottom: 14px;
   text-align: center;
 }
 
@@ -36,46 +53,88 @@ body {
   letter-spacing: 0;
 }
 
-.stats {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 8px;
-  margin-bottom: 8px;
+.game-logo {
+  display: block;
+  width: min(260px, 62vw);
+  height: auto;
+  margin: 0 auto;
+  -webkit-user-drag: none;
+  user-select: none;
 }
 
-.stats div {
+.game-layout {
   display: grid;
-  gap: 2px;
-  padding: 7px 9px;
+  grid-template-columns: auto minmax(0, 300px);
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+}
+
+.side-panel {
+  display: grid;
+  justify-self: end;
+  gap: 8px;
+}
+
+.info-block {
+  display: grid;
+  gap: 6px;
+  min-height: 78px;
+  padding: 10px;
   background: #1f2d3a;
   border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-.stats span {
-  color: #c9d6df;
-  font-size: 11px;
+.stat-block {
+  place-items: center;
+  text-align: center;
 }
 
-.stats strong {
-  font-size: 18px;
+.info-block span {
+  color: #c9d6df;
+  font-size: 14px;
+}
+
+.info-block strong {
+  font-size: 28px;
+  font-weight: 400;
   line-height: 1;
+}
+
+.preview-block {
+  min-height: 140px;
+}
+
+#next-piece {
+  width: 112px;
+  aspect-ratio: 1;
+  background: #17212b;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: none;
 }
 
 .board-wrap {
   position: relative;
-  width: min(100%, 300px, calc((100svh - 130px) / 2));
+  width: min(100%, 300px, calc((100svh - 96px) / 2));
   min-width: 170px;
-  margin: 0 auto;
   touch-action: none;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
-canvas {
+#game {
   display: block;
   width: 100%;
   aspect-ratio: 1 / 2;
   background: #17212b;
   border: 2px solid #f2aa4c;
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+  touch-action: none;
+  -webkit-touch-callout: none;
+  -webkit-user-drag: none;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 .game-over {
@@ -188,6 +247,8 @@ input {
   background: #17212b;
   color: #f7f7f2;
   font: inherit;
+  -webkit-user-select: text;
+  user-select: text;
 }
 
 .menu-panel {
@@ -283,11 +344,15 @@ input {
   }
 
   .game-header {
-    margin-bottom: 16px;
+    margin-bottom: 18px;
   }
 
   .game-header h1 {
     font-size: 34px;
+  }
+
+  .game-logo {
+    width: min(300px, 58vw);
   }
 
   .board-wrap {
@@ -296,9 +361,49 @@ input {
 }
 
 @media (max-width: 719px) {
+  .game-panel {
+    width: min(100%, 420px);
+    min-width: 0;
+  }
+
+  .game-layout {
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    gap: 8px;
+  }
+
+  .side-panel {
+    grid-template-columns: 1fr;
+    justify-content: stretch;
+    justify-self: end;
+  }
+
+  .info-block {
+    min-height: 54px;
+    padding: 7px 8px;
+  }
+
+  .info-block span {
+    font-size: 12px;
+  }
+
+  .info-block strong {
+    font-size: 21px;
+  }
+
+  .preview-block {
+    min-height: 54px;
+  }
+
+  #next-piece {
+    width: 58px;
+    justify-self: center;
+  }
+
   .board-wrap {
-    width: min(100%, 300px, calc((100svh - 142px) / 2));
+    width: min(100%, 300px, calc((100svh - 96px) / 2));
     min-width: 150px;
+    margin: 0;
   }
 }
 
@@ -307,20 +412,27 @@ input {
     padding: 8px;
   }
 
-  .game-header h1 {
-    font-size: 24px;
-  }
-
-  .stats {
+  .game-layout {
     gap: 6px;
-    margin-bottom: 6px;
   }
 
-  .stats div {
-    padding: 6px 8px;
+  .game-logo {
+    width: min(210px, 56vw);
   }
 
-  .stats strong {
+  .side-panel {
+    gap: 6px;
+  }
+
+  .info-block {
+    padding: 6px;
+  }
+
+  .info-block strong {
     font-size: 17px;
+  }
+
+  #next-piece {
+    width: 48px;
   }
 }
