@@ -1,11 +1,12 @@
-const cacheName = "tetris-game-v15";
+const cacheName = "tetris-game-v25";
 const filesToCache = [
   "./",
   "./index.html",
-  "./style.css?v=15",
-  "./game.js?v=15",
+  "./style.css?v=25",
+  "./game.js?v=25",
   "./manifest.json",
-  "./icon.svg"
+  "./icon.svg",
+  "./tetris-logo.png"
 ];
 
 self.addEventListener("install", (event) => {
