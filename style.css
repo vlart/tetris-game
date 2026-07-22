@@ -191,7 +191,7 @@ button:focus-visible {
   display: block;
   width: 22px;
   height: 3px;
-  background: currentColor;
+  background: #ffffff;
 }
 
 .close-button {
@@ -221,6 +221,9 @@ button:focus-visible {
   display: grid;
   gap: 8px;
   width: min(100%, 240px);
+  touch-action: manipulation;
+  -webkit-user-select: auto;
+  user-select: auto;
 }
 
 .score-form.is-hidden {
@@ -247,6 +250,8 @@ input {
   background: #17212b;
   color: #f7f7f2;
   font: inherit;
+  touch-action: manipulation;
+  -webkit-touch-callout: default;
   -webkit-user-select: text;
   user-select: text;
 }

@@ -361,7 +361,7 @@ function addScore(clearedRows) {
 
 function updateStats() {
   scoreElement.textContent = score;
-  bestScoreElement.textContent = getBestScore();
+  bestScoreElement.textContent = Math.max(score, getBestScore());
   levelElement.textContent = level;
 }
 
@@ -385,8 +385,8 @@ function resetGame() {
 }
 
 function stopBoardGesture(event) {
-  if (event.cancelable) {
-    event.preventDefault();
+  if (!isInteractiveTarget(event.target)) {
+    preventBoardDefault(event);
   }
 
   event.stopPropagation();
@@ -399,11 +399,15 @@ function preventBoardDefault(event) {
 }
 
 function preventBoardTouch(event) {
-  if (event.target.closest("input, button")) {
+  if (isInteractiveTarget(event.target)) {
     return;
   }
 
   preventBoardDefault(event);
+}
+
+function isInteractiveTarget(target) {
+  return target.closest("input, textarea, select, button, label");
 }
 
 function endGame() {
@@ -521,6 +525,10 @@ function escapeHtml(text) {
 document.addEventListener("keydown", (event) => {
   const gameKeys = ["ArrowLeft", "ArrowRight", "ArrowDown", "ArrowUp", "Space"];
 
+  if (isInteractiveTarget(event.target)) {
+    return;
+  }
+
   if (gameKeys.includes(event.code)) {
     event.preventDefault();
   }
@@ -563,6 +571,10 @@ const hardDropDistance = 120;
 const tapDistance = 12;
 
 boardWrap.addEventListener("pointerdown", (event) => {
+  if (isInteractiveTarget(event.target)) {
+    return;
+  }
+
   preventBoardDefault(event);
   touchStartX = event.clientX;
   touchStartY = event.clientY;
@@ -575,6 +587,10 @@ boardWrap.addEventListener("pointerdown", (event) => {
 });
 
 boardWrap.addEventListener("pointermove", (event) => {
+  if (isInteractiveTarget(event.target)) {
+    return;
+  }
+
   preventBoardDefault(event);
 
   if (touchHardDropped) {
@@ -616,6 +632,10 @@ boardWrap.addEventListener("pointermove", (event) => {
 });
 
 boardWrap.addEventListener("pointerup", (event) => {
+  if (isInteractiveTarget(event.target)) {
+    return;
+  }
+
   preventBoardDefault(event);
   const deltaX = event.clientX - touchStartX;
   const deltaY = event.clientY - touchStartY;
@@ -631,6 +651,10 @@ boardWrap.addEventListener("pointerup", (event) => {
 });
 
 boardWrap.addEventListener("pointercancel", (event) => {
+  if (isInteractiveTarget(event.target)) {
+    return;
+  }
+
   preventBoardDefault(event);
   boardWrap.releasePointerCapture?.(event.pointerId);
 });
@@ -654,6 +678,14 @@ gameOverElement.addEventListener("pointerdown", stopBoardGesture);
 gameOverElement.addEventListener("pointermove", stopBoardGesture);
 gameOverElement.addEventListener("pointerup", stopBoardGesture);
 gameOverElement.addEventListener("click", stopBoardGesture);
+
+playerNameInput.addEventListener("pointerdown", (event) => {
+  event.stopPropagation();
+});
+
+playerNameInput.addEventListener("click", () => {
+  playerNameInput.focus();
+});
 
 menuToggle.addEventListener("click", openMenu);
 menuClose.addEventListener("click", () => closeMenu());
