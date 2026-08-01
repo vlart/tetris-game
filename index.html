@@ -13,7 +13,7 @@
   <link rel="manifest" href="manifest.json">
   <link rel="icon" href="icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="icon.svg">
-  <link rel="stylesheet" href="style.css?v=27">
+  <link rel="stylesheet" href="style.css?v=34">
 </head>
 <body>
   <main class="game-shell">
@@ -77,6 +77,18 @@
           </header>
 
           <div class="menu-actions">
+            <label class="theme-picker" for="theme-select">
+              <span>Тема</span>
+              <select id="theme-select" name="theme">
+                <option value="classic">Classic</option>
+                <option value="classic-random">Classic Random</option>
+                <option value="console">Console Green</option>
+                <option value="grayscale">Shades of Gray</option>
+                <option value="candy">Candy Colors</option>
+                <option value="knitted">Knitted</option>
+                <option value="embossed">Embossed</option>
+              </select>
+            </label>
             <button id="resume-game" type="button">Продолжить</button>
             <button id="new-game" type="button">Начать новую игру</button>
             <button id="finish-game" type="button">Закончить игру</button>
@@ -101,6 +113,6 @@
     </section>
   </main>
 
-  <script src="game.js?v=27"></script>
+  <script src="game.js?v=34"></script>
 </body>
 </html>
