@@ -22,6 +22,7 @@ const leaderboardPanel = document.querySelector("#leaderboard-panel");
 const leaderboardList = document.querySelector("#leaderboard-list");
 const howToToggle = document.querySelector("#how-to-toggle");
 const howToPanel = document.querySelector("#how-to-panel");
+const themeSelect = document.querySelector("#theme-select");
 
 const columns = 10;
 const rows = 20;
@@ -36,6 +37,90 @@ const colors = {
   J: "#4d8dff",
   L: "#ff9f1c"
 };
+
+const themeDefinitions = {
+  classic: {
+    board: "#17212b",
+    grid: "rgba(255, 255, 255, 0.06)",
+    shine: "rgba(255, 255, 255, 0.18)",
+    style: "classic",
+    colors: { ...colors }
+  },
+  "classic-random": {
+    board: "#17212b",
+    grid: "rgba(255, 255, 255, 0.06)",
+    shine: "rgba(255, 255, 255, 0.18)",
+    style: "classic",
+    randomizePieces: true,
+    colors: { ...colors }
+  },
+  console: {
+    board: "#0f380f",
+    grid: "rgba(155, 188, 15, 0.12)",
+    shine: "rgba(224, 248, 208, 0.2)",
+    style: "classic",
+    colors: { I: "#9bbc0f", O: "#8bac0f", T: "#a7c51a", S: "#76920c", Z: "#93ad18", J: "#6f8610", L: "#b2ce22" }
+  },
+  grayscale: {
+    board: "#181818",
+    grid: "rgba(255, 255, 255, 0.08)",
+    shine: "rgba(255, 255, 255, 0.24)",
+    style: "classic",
+    colors: { I: "#eeeeee", O: "#cfcfcf", T: "#ababab", S: "#8d8d8d", Z: "#737373", J: "#575757", L: "#3f3f3f" }
+  },
+  candy: {
+    board: "#332a4d",
+    grid: "rgba(255, 255, 255, 0.08)",
+    shine: "rgba(255, 255, 255, 0.35)",
+    style: "classic",
+    colors: { I: "#77e8e1", O: "#ffe66d", T: "#c792ea", S: "#8ee3a1", Z: "#ff7b9c", J: "#82aaff", L: "#ffb86c" }
+  },
+  knitted: {
+    board: "#332825",
+    grid: "rgba(255, 239, 214, 0.06)",
+    shine: "rgba(255, 246, 226, 0.22)",
+    style: "knitted",
+    colors: { I: "#63b7af", O: "#e7b65a", T: "#9d75b3", S: "#79a96b", Z: "#c96767", J: "#668db3", L: "#d88957" }
+  },
+  embossed: {
+    board: "#242931",
+    grid: "rgba(255, 255, 255, 0.045)",
+    shine: "rgba(255, 255, 255, 0.3)",
+    style: "embossed",
+    colors: { I: "#63a6ad", O: "#c1a65b", T: "#8c79a8", S: "#6f9d79", Z: "#ad6d70", J: "#687fa8", L: "#af7f5e" }
+  }
+};
+const themeKey = "tetrisTheme";
+let activeTheme = themeDefinitions.classic;
+
+function applyTheme(themeName, save = true) {
+  const resolvedName = themeDefinitions[themeName] ? themeName : "classic";
+  activeTheme = themeDefinitions[resolvedName];
+  Object.assign(colors, activeTheme.colors);
+  document.documentElement.dataset.theme = resolvedName;
+  themeSelect.value = resolvedName;
+
+  const pageColor = getComputedStyle(document.documentElement)
+    .getPropertyValue("--page-bg")
+    .trim();
+  document.querySelector('meta[name="theme-color"]')?.setAttribute("content", pageColor);
+
+  if (save) {
+    try {
+      localStorage.setItem(themeKey, resolvedName);
+    } catch (error) {
+      console.warn("Не удалось сохранить тему", error);
+    }
+  }
+}
+
+function initializeTheme() {
+  try {
+    applyTheme(localStorage.getItem(themeKey) || "classic", false);
+  } catch (error) {
+    applyTheme("classic", false);
+  }
+}
 
 const shapes = {
   I: [
@@ -76,22 +161,29 @@ const shapes = {
 };
 
 const board = createBoard();
+let previousGeneratedPieceName = null;
 let currentPiece = createPiece();
 let nextPiece = createPiece();
 let previousTime = 0;
 let dropCounter = 0;
 let dropInterval = 700;
+let lockCounter = 0;
+let entryCounter = 0;
 let score = 0;
 let level = 1;
 let isGameOver = false;
 let isPaused = false;
+let isWaitingForNextPiece = false;
 let scoreSaved = false;
 
+const lockDelay = 250;
+const entryDelay = 200;
+
 const lineScores = {
-  1: 100,
-  2: 300,
-  3: 500,
-  4: 800
+  1: 40,
+  2: 100,
+  3: 300,
+  4: 1200
 };
 const leaderboardKey = "tetrisLeaderboardV2";
 
@@ -101,30 +193,39 @@ function createBoard() {
 
 function createPiece() {
   const names = Object.keys(shapes);
-  const name = names[Math.floor(Math.random() * names.length)];
+  let name = names[Math.floor(Math.random() * names.length)];
+
+  if (name === previousGeneratedPieceName) {
+    name = names[Math.floor(Math.random() * names.length)];
+  }
+
+  previousGeneratedPieceName = name;
   const shape = shapes[name].map((row) => [...row]);
+  const randomColorName = names[Math.floor(Math.random() * names.length)];
 
   return {
     name,
+    randomColorName,
     shape,
-    color: colors[name],
     x: Math.floor(columns / 2) - Math.ceil(shape[0].length / 2),
     y: 0
   };
 }
 
 function draw() {
-  context.fillStyle = "#17212b";
+  context.fillStyle = activeTheme.board;
   context.fillRect(0, 0, canvas.width, canvas.height);
 
   drawGrid();
   drawBoard();
-  drawPiece(currentPiece);
+  if (!isWaitingForNextPiece) {
+    drawPiece(currentPiece);
+  }
   drawNextPiece();
 }
 
 function drawGrid() {
-  context.strokeStyle = "rgba(255, 255, 255, 0.06)";
+  context.strokeStyle = activeTheme.grid;
   context.lineWidth = 1;
 
   for (let x = 0; x <= columns; x++) {
@@ -144,9 +245,9 @@ function drawGrid() {
 
 function drawBoard() {
   board.forEach((row, y) => {
-    row.forEach((color, x) => {
-      if (color) {
-        drawBlock(x, y, color);
+    row.forEach((cell, x) => {
+      if (cell) {
+        drawBlock(x, y, getPieceColor(cell));
       }
     });
   });
@@ -156,7 +257,7 @@ function drawPiece(piece) {
   piece.shape.forEach((row, y) => {
     row.forEach((cell, x) => {
       if (cell) {
-        drawBlock(piece.x + x, piece.y + y, piece.color);
+        drawBlock(piece.x + x, piece.y + y, getPieceColor(piece));
       }
     });
   });
@@ -169,8 +270,34 @@ function drawBlock(x, y, color) {
   context.fillStyle = color;
   context.fillRect(pixelX + 1, pixelY + 1, blockSize - 2, blockSize - 2);
 
-  context.fillStyle = "rgba(255, 255, 255, 0.18)";
-  context.fillRect(pixelX + 3, pixelY + 3, blockSize - 6, 5);
+  if (activeTheme.style === "knitted") {
+    context.strokeStyle = activeTheme.shine;
+    context.lineWidth = 2;
+    context.beginPath();
+    context.moveTo(pixelX + 5, pixelY + blockSize - 5);
+    context.lineTo(pixelX + blockSize / 2, pixelY + 5);
+    context.lineTo(pixelX + blockSize - 5, pixelY + blockSize - 5);
+    context.stroke();
+  } else if (activeTheme.style === "embossed") {
+    context.fillStyle = activeTheme.shine;
+    context.fillRect(pixelX + 3, pixelY + 3, blockSize - 6, 3);
+    context.fillRect(pixelX + 3, pixelY + 3, 3, blockSize - 6);
+    context.fillStyle = "rgba(0, 0, 0, 0.28)";
+    context.fillRect(pixelX + 4, pixelY + blockSize - 6, blockSize - 7, 3);
+    context.fillRect(pixelX + blockSize - 6, pixelY + 4, 3, blockSize - 7);
+  } else {
+    context.fillStyle = activeTheme.shine;
+    context.fillRect(pixelX + 3, pixelY + 3, blockSize - 6, 5);
+  }
+}
+
+function getPieceColor(piece) {
+  const pieceData = typeof piece === "string" ? { name: piece } : piece;
+  const colorName = activeTheme.randomizePieces
+    ? pieceData.randomColorName || pieceData.name
+    : pieceData.name;
+
+  return colors[colorName];
 }
 
 function drawNextPiece() {
@@ -194,16 +321,16 @@ function drawNextPiece() {
   const offsetX = (nextCanvas.width - shapeWidth) / 2;
   const offsetY = (nextCanvas.height - shapeHeight) / 2;
 
-  nextContext.fillStyle = "#17212b";
+  nextContext.fillStyle = activeTheme.board;
   nextContext.fillRect(0, 0, nextCanvas.width, nextCanvas.height);
 
   filledCells.forEach((cell) => {
     const pixelX = offsetX + (cell.x - minX) * previewBlockSize;
     const pixelY = offsetY + (cell.y - minY) * previewBlockSize;
 
-    nextContext.fillStyle = nextPiece.color;
+    nextContext.fillStyle = getPieceColor(nextPiece);
     nextContext.fillRect(pixelX + 1, pixelY + 1, previewBlockSize - 2, previewBlockSize - 2);
-    nextContext.fillStyle = "rgba(255, 255, 255, 0.18)";
+    nextContext.fillStyle = activeTheme.shine;
     nextContext.fillRect(pixelX + 3, pixelY + 3, previewBlockSize - 6, 5);
   });
 }
@@ -213,10 +340,28 @@ function update(time = 0) {
   previousTime = time;
 
   if (!isGameOver && !isPaused) {
-    dropCounter += deltaTime;
+    if (isWaitingForNextPiece) {
+      entryCounter += deltaTime;
 
-    if (dropCounter > dropInterval) {
-      moveDown();
+      if (entryCounter >= entryDelay) {
+        spawnNextPiece();
+      }
+    } else {
+      dropCounter += deltaTime;
+
+      if (dropCounter > dropInterval) {
+        moveDown();
+      }
+
+      if (isGrounded()) {
+        lockCounter += deltaTime;
+
+        if (lockCounter >= lockDelay) {
+          settlePiece();
+        }
+      } else {
+        lockCounter = 0;
+      }
     }
   }
 
@@ -224,8 +369,8 @@ function update(time = 0) {
   requestAnimationFrame(update);
 }
 
-function moveDown() {
-  if (isGameOver || isPaused) {
+function moveDown(isSoftDrop = false) {
+  if (isGameOver || isPaused || isWaitingForNextPiece) {
     return;
   }
 
@@ -233,14 +378,16 @@ function moveDown() {
 
   if (collides(currentPiece)) {
     currentPiece.y -= 1;
-    settlePiece();
+  } else if (isSoftDrop) {
+    score += 1;
+    updateStats();
   }
 
   dropCounter = 0;
 }
 
 function hardDrop() {
-  if (isGameOver || isPaused) {
+  if (isGameOver || isPaused || isWaitingForNextPiece) {
     return;
   }
 
@@ -254,11 +401,25 @@ function hardDrop() {
 }
 
 function settlePiece() {
+  if (isWaitingForNextPiece) {
+    return;
+  }
+
   lockPiece();
   const clearedRows = clearFullRows();
   addScore(clearedRows);
+  isWaitingForNextPiece = true;
+  entryCounter = 0;
+  lockCounter = 0;
+  dropCounter = 0;
+}
+
+function spawnNextPiece() {
   currentPiece = nextPiece;
   nextPiece = createPiece();
+  isWaitingForNextPiece = false;
+  entryCounter = 0;
+  dropCounter = 0;
 
   if (collides(currentPiece)) {
     endGame();
@@ -266,7 +427,7 @@ function settlePiece() {
 }
 
 function moveSideways(direction) {
-  if (isGameOver || isPaused) {
+  if (isGameOver || isPaused || isWaitingForNextPiece) {
     return;
   }
 
@@ -278,7 +439,7 @@ function moveSideways(direction) {
 }
 
 function rotatePiece() {
-  if (isGameOver || isPaused) {
+  if (isGameOver || isPaused || isWaitingForNextPiece) {
     return;
   }
 
@@ -318,6 +479,10 @@ function collides(piece) {
   );
 }
 
+function isGrounded() {
+  return collides({ ...currentPiece, y: currentPiece.y + 1 });
+}
+
 function lockPiece() {
   currentPiece.shape.forEach((row, y) => {
     row.forEach((cell, x) => {
@@ -326,7 +491,10 @@ function lockPiece() {
         const boardY = currentPiece.y + y;
 
         if (boardY >= 0) {
-          board[boardY][boardX] = currentPiece.color;
+          board[boardY][boardX] = {
+            name: currentPiece.name,
+            randomColorName: currentPiece.randomColorName
+          };
         }
       }
     });
@@ -353,7 +521,7 @@ function addScore(clearedRows) {
     return;
   }
 
-  score += lineScores[clearedRows] * level;
+  score += lineScores[clearedRows] * (level + 1);
   level = Math.floor(score / 1000) + 1;
   dropInterval = Math.max(120, 700 - (level - 1) * 55);
   updateStats();
@@ -367,15 +535,19 @@ function updateStats() {
 
 function resetGame() {
   board.forEach((row) => row.fill(null));
+  previousGeneratedPieceName = null;
   currentPiece = createPiece();
   nextPiece = createPiece();
   previousTime = 0;
   dropCounter = 0;
   dropInterval = 700;
+  lockCounter = 0;
+  entryCounter = 0;
   score = 0;
   level = 1;
   isGameOver = false;
   isPaused = false;
+  isWaitingForNextPiece = false;
   scoreSaved = false;
   gameOverElement.classList.add("is-hidden");
   scoreForm.classList.remove("is-hidden");
@@ -542,7 +714,7 @@ document.addEventListener("keydown", (event) => {
   }
 
   if (event.code === "ArrowDown") {
-    moveDown();
+    moveDown(true);
   }
 
   if (event.code === "Space" || event.code === "ArrowUp") {
@@ -625,7 +797,7 @@ boardWrap.addEventListener("pointermove", (event) => {
 
   if (deltaY >= gestureStep) {
     const steps = Math.floor(deltaY / gestureStep);
-    repeatMove(steps, moveDown);
+    repeatMove(steps, () => moveDown(true));
     touchLastY += steps * gestureStep;
     touchMoved = true;
   }
@@ -702,6 +874,9 @@ leaderboardToggle.addEventListener("click", () => {
 howToToggle.addEventListener("click", () => {
   togglePanel(howToPanel, howToToggle);
 });
+themeSelect.addEventListener("change", () => {
+  applyTheme(themeSelect.value);
+});
 
 scoreForm.addEventListener("submit", (event) => {
   event.preventDefault();
@@ -717,6 +892,7 @@ if ("serviceWorker" in navigator && canUseServiceWorker) {
   navigator.serviceWorker.register("service-worker.js");
 }
 
+initializeTheme();
 updateStats();
 updateMenuState();
 renderLeaderboard();

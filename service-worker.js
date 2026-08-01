@@ -1,9 +1,9 @@
-const cacheName = "tetris-game-v27";
+const cacheName = "tetris-game-v32";
 const filesToCache = [
   "./",
   "./index.html",
-  "./style.css?v=27",
-  "./game.js?v=27",
+  "./style.css?v=32",
+  "./game.js?v=32",
   "./manifest.json",
   "./icon.svg",
   "./tetris-logo.png"
