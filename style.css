@@ -2,6 +2,84 @@
   box-sizing: border-box;
 }
 
+:root {
+  --page-bg: #101820;
+  --panel-bg: #17212b;
+  --card-bg: #1f2d3a;
+  --text: #f7f7f2;
+  --muted: #c9d6df;
+  --accent: #f2aa4c;
+  --accent-hover: #ffd166;
+  --accent-text: #101820;
+  --border: rgba(255, 255, 255, 0.08);
+  --overlay: rgba(16, 24, 32, 0.86);
+}
+
+:root[data-theme="console"] {
+  --page-bg: #071f0b;
+  --panel-bg: #0f380f;
+  --card-bg: #174817;
+  --text: #e0f8d0;
+  --muted: #9bbc0f;
+  --accent: #8bac0f;
+  --accent-hover: #b4d52b;
+  --accent-text: #0f380f;
+  --border: rgba(155, 188, 15, 0.22);
+  --overlay: rgba(7, 31, 11, 0.9);
+}
+
+:root[data-theme="grayscale"] {
+  --page-bg: #0e0e0e;
+  --panel-bg: #181818;
+  --card-bg: #292929;
+  --text: #f1f1f1;
+  --muted: #b8b8b8;
+  --accent: #d0d0d0;
+  --accent-hover: #ffffff;
+  --accent-text: #151515;
+  --border: rgba(255, 255, 255, 0.13);
+  --overlay: rgba(10, 10, 10, 0.88);
+}
+
+:root[data-theme="candy"] {
+  --page-bg: #241c38;
+  --panel-bg: #332a4d;
+  --card-bg: #473a67;
+  --text: #fff8ff;
+  --muted: #dfc9f2;
+  --accent: #ff85b3;
+  --accent-hover: #ffc2dc;
+  --accent-text: #3b1f45;
+  --border: rgba(255, 220, 242, 0.16);
+  --overlay: rgba(36, 28, 56, 0.88);
+}
+
+:root[data-theme="knitted"] {
+  --page-bg: #241b19;
+  --panel-bg: #332825;
+  --card-bg: #493a35;
+  --text: #fff0d8;
+  --muted: #d9bea5;
+  --accent: #d88957;
+  --accent-hover: #edaa76;
+  --accent-text: #2b1e1a;
+  --border: rgba(255, 239, 214, 0.15);
+  --overlay: rgba(36, 27, 25, 0.9);
+}
+
+:root[data-theme="embossed"] {
+  --page-bg: #181c22;
+  --panel-bg: #242931;
+  --card-bg: #303742;
+  --text: #edf0f4;
+  --muted: #b5bdc8;
+  --accent: #8894a5;
+  --accent-hover: #aeb8c5;
+  --accent-text: #171b21;
+  --border: rgba(255, 255, 255, 0.12);
+  --overlay: rgba(24, 28, 34, 0.9);
+}
+
 html {
   touch-action: manipulation;
   -webkit-text-size-adjust: 100%;
@@ -14,14 +92,19 @@ html {
 body {
   margin: 0;
   min-height: 100vh;
-  background: #101820;
-  color: #f7f7f2;
+  background: var(--page-bg);
+  color: var(--text);
   font-family: "Neucha", Arial, Helvetica, sans-serif;
   overscroll-behavior: none;
   -webkit-tap-highlight-color: transparent;
   -webkit-touch-callout: none;
   -webkit-user-select: none;
   user-select: none;
+}
+
+:root[data-theme="knitted"] body {
+  background-color: var(--page-bg);
+  background-image: repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.025) 0 2px, transparent 2px 7px);
 }
 
 .game-shell {
@@ -81,8 +164,8 @@ body {
   gap: 6px;
   min-height: 78px;
   padding: 10px;
-  background: #1f2d3a;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--card-bg);
+  border: 1px solid var(--border);
 }
 
 .stat-block {
@@ -91,7 +174,7 @@ body {
 }
 
 .info-block span {
-  color: #c9d6df;
+  color: var(--muted);
   font-size: 14px;
 }
 
@@ -108,8 +191,8 @@ body {
 #next-piece {
   width: 112px;
   aspect-ratio: 1;
-  background: #17212b;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--panel-bg);
+  border: 1px solid var(--border);
   box-shadow: none;
 }
 
@@ -127,8 +210,8 @@ body {
   display: block;
   width: 100%;
   aspect-ratio: 1 / 2;
-  background: #17212b;
-  border: 2px solid #f2aa4c;
+  background: var(--panel-bg);
+  border: 2px solid var(--accent);
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
   touch-action: none;
   -webkit-touch-callout: none;
@@ -145,7 +228,7 @@ body {
   gap: 18px;
   padding: 24px;
   text-align: center;
-  background: rgba(16, 24, 32, 0.86);
+  background: var(--overlay);
 }
 
 .game-over.is-hidden {
@@ -162,8 +245,8 @@ button {
   min-height: 44px;
   border: 0;
   padding: 0 18px;
-  background: #f2aa4c;
-  color: #101820;
+  background: var(--accent);
+  color: var(--accent-text);
   font: inherit;
   font-weight: 800;
   cursor: pointer;
@@ -171,7 +254,7 @@ button {
 
 button:hover,
 button:focus-visible {
-  background: #ffd166;
+  background: var(--accent-hover);
 }
 
 .icon-button {
@@ -184,14 +267,14 @@ button:focus-visible {
   width: 44px;
   min-height: 44px;
   padding: 0;
-  background: #1f2d3a;
+  background: var(--card-bg);
 }
 
 .icon-button span {
   display: block;
   width: 22px;
   height: 3px;
-  background: #ffffff;
+  background: var(--text);
 }
 
 .close-button {
@@ -213,7 +296,7 @@ button:focus-visible {
 
 .game-over p {
   margin: 0;
-  color: #c9d6df;
+  color: var(--muted);
   font-size: 18px;
 }
 
@@ -231,7 +314,7 @@ button:focus-visible {
 }
 
 .score-form label {
-  color: #c9d6df;
+  color: var(--muted);
   font-size: 13px;
   text-align: left;
 }
@@ -242,13 +325,14 @@ button:focus-visible {
   gap: 8px;
 }
 
-input {
+input,
+select {
   min-width: 0;
   min-height: 44px;
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  border: 1px solid var(--border);
   padding: 0 10px;
-  background: #17212b;
-  color: #f7f7f2;
+  background: var(--panel-bg);
+  color: var(--text);
   font: inherit;
   touch-action: manipulation;
   -webkit-touch-callout: default;
@@ -263,7 +347,7 @@ input {
   display: grid;
   place-items: center;
   padding: 16px;
-  background: rgba(16, 24, 32, 0.72);
+  background: var(--overlay);
 }
 
 .menu-panel.is-hidden {
@@ -275,8 +359,8 @@ input {
   max-height: calc(100svh - 32px);
   overflow: auto;
   padding: 18px;
-  background: #17212b;
-  border: 2px solid #f2aa4c;
+  background: var(--panel-bg);
+  border: 2px solid var(--accent);
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45);
 }
 
@@ -299,6 +383,36 @@ input {
   display: grid;
   gap: 10px;
   margin-bottom: 18px;
+}
+
+.theme-picker {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+  min-height: 44px;
+  padding-left: 12px;
+  color: var(--muted);
+  background: var(--card-bg);
+}
+
+.theme-picker select {
+  width: 100%;
+  min-height: 44px;
+  padding: 0 34px 0 12px;
+  cursor: pointer;
+}
+
+:root[data-theme="knitted"] .info-block,
+:root[data-theme="knitted"] .theme-picker,
+:root[data-theme="knitted"] .menu-content {
+  background-image: repeating-linear-gradient(-45deg, rgba(255, 255, 255, 0.025) 0 2px, transparent 2px 7px);
+}
+
+:root[data-theme="embossed"] .info-block,
+:root[data-theme="embossed"] .theme-picker {
+  border-color: transparent;
+  box-shadow: inset 2px 2px 3px rgba(255, 255, 255, 0.09), inset -2px -2px 3px rgba(0, 0, 0, 0.35);
 }
 
 .menu-panel.game-is-over #resume-game,
@@ -329,16 +443,16 @@ input {
 }
 
 .leaderboard li {
-  color: #c9d6df;
+  color: var(--muted);
 }
 
 .leaderboard strong {
-  color: #f7f7f2;
+  color: var(--text);
 }
 
 .how-to-play p {
   margin: 0;
-  color: #c9d6df;
+  color: var(--muted);
   font-size: 14px;
   line-height: 1.45;
 }
