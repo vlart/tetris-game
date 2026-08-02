@@ -348,11 +348,9 @@ function update(time = 0) {
       }
     } else {
       dropCounter += deltaTime;
-
       if (dropCounter > dropInterval) {
-        moveDown();
-      }
-
+              moveDown();
+            } 
       if (isGrounded()) {
         lockCounter += deltaTime;
 
@@ -396,7 +394,7 @@ function hardDrop() {
   }
 
   currentPiece.y -= 1;
-  settlePiece();
+  lockCounter = 0;
   dropCounter = 0;
 }
 
@@ -409,6 +407,7 @@ function settlePiece() {
   const clearedRows = clearFullRows();
   addScore(clearedRows);
   isWaitingForNextPiece = true;
+  touchHardDropped = true;
   entryCounter = 0;
   lockCounter = 0;
   dropCounter = 0;
@@ -815,7 +814,13 @@ boardWrap.addEventListener("pointerup", (event) => {
   const distanceX = Math.abs(deltaX);
   const distanceY = Math.abs(deltaY);
 
-  if (!touchMoved && distanceX < tapDistance && distanceY < tapDistance && elapsed < 350) {
+  if (
+    !touchHardDropped &&
+    !touchMoved &&
+    distanceX < tapDistance &&
+    distanceY < tapDistance &&
+    elapsed < 350
+  ) {
     rotatePiece();
   }
 
