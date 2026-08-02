@@ -9,5 +9,4 @@
 
 ## Онлайн-версия
 
-[Ссылка появится после публикации.
-](https://vlart.github.io/tetris-game/)
+https://vlart.github.io/tetris-game/
