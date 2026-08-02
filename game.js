@@ -348,11 +348,9 @@ function update(time = 0) {
       }
     } else {
       dropCounter += deltaTime;
-
       if (dropCounter > dropInterval) {
-        moveDown();
-      }
-
+              moveDown();
+            } 
       if (isGrounded()) {
         lockCounter += deltaTime;
 
