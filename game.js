@@ -175,6 +175,7 @@ let isGameOver = false;
 let isPaused = false;
 let isWaitingForNextPiece = false;
 let scoreSaved = false;
+const maxFrameDelta = 50;
 
 const lockDelay = 250;
 const entryDelay = 200;
@@ -336,7 +337,7 @@ function drawNextPiece() {
 }
 
 function update(time = 0) {
-  const deltaTime = time - previousTime;
+  const deltaTime = Math.min(Math.max(time - previousTime, 0), maxFrameDelta);
   previousTime = time;
 
   if (!isGameOver && !isPaused) {
@@ -537,7 +538,7 @@ function resetGame() {
   previousGeneratedPieceName = null;
   currentPiece = createPiece();
   nextPiece = createPiece();
-  previousTime = 0;
+  previousTime = performance.now();
   dropCounter = 0;
   dropInterval = 700;
   lockCounter = 0;
@@ -894,7 +895,18 @@ const canUseServiceWorker =
   window.location.hostname === "127.0.0.1";
 
 if ("serviceWorker" in navigator && canUseServiceWorker) {
-  navigator.serviceWorker.register("service-worker.js");
+  let isRefreshingForUpdate = false;
+
+  navigator.serviceWorker.addEventListener("controllerchange", () => {
+    if (isRefreshingForUpdate) {
+      return;
+    }
+
+    isRefreshingForUpdate = true;
+    window.location.reload();
+  });
+
+  navigator.serviceWorker.register("service-worker.js", { updateViaCache: "none" });
 }
 
 initializeTheme();
