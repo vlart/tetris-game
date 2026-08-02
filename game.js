@@ -174,11 +174,15 @@ let level = 1;
 let isGameOver = false;
 let isPaused = false;
 let isWaitingForNextPiece = false;
+let isClearingLines = false;
+let clearingRows = [];
+let lineClearCounter = 0;
 let scoreSaved = false;
 const maxFrameDelta = 50;
 
-const lockDelay = 250;
-const entryDelay = 200;
+const lockDelay = 200;
+const entryDelay = 250;
+const lineClearDuration = 200;
 
 const lineScores = {
   1: 40,
@@ -246,11 +250,30 @@ function drawGrid() {
 
 function drawBoard() {
   board.forEach((row, y) => {
+    const isClearingRow = isClearingLines && clearingRows.includes(y);
+
+    if (isClearingRow) {
+      const progress = Math.min(lineClearCounter / lineClearDuration, 1);
+      const easedProgress = 1 - Math.pow(1 - progress, 3);
+      context.save();
+      context.globalAlpha = 1 - progress * 0.65;
+      context.translate(canvas.width / 2, 0);
+      context.scale(1 - easedProgress, 1);
+      context.translate(-canvas.width / 2, 0);
+    }
+
     row.forEach((cell, x) => {
       if (cell) {
         drawBlock(x, y, getPieceColor(cell));
       }
     });
+
+    if (isClearingRow) {
+      const flashOpacity = Math.max(0, 0.7 - lineClearCounter / lineClearDuration);
+      context.fillStyle = `rgba(255, 255, 255, ${flashOpacity})`;
+      context.fillRect(0, y * blockSize + 1, canvas.width, blockSize - 2);
+      context.restore();
+    }
   });
 }
 
@@ -341,7 +364,13 @@ function update(time = 0) {
   previousTime = time;
 
   if (!isGameOver && !isPaused) {
-    if (isWaitingForNextPiece) {
+    if (isClearingLines) {
+      lineClearCounter += deltaTime;
+
+      if (lineClearCounter >= lineClearDuration) {
+        finishLineClear();
+      }
+    } else if (isWaitingForNextPiece) {
       entryCounter += deltaTime;
 
       if (entryCounter >= entryDelay) {
@@ -405,13 +434,46 @@ function settlePiece() {
   }
 
   lockPiece();
-  const clearedRows = clearFullRows();
-  addScore(clearedRows);
   isWaitingForNextPiece = true;
   touchHardDropped = true;
   entryCounter = 0;
   lockCounter = 0;
   dropCounter = 0;
+
+  clearingRows = findFullRows();
+
+  if (clearingRows.length > 0) {
+    isClearingLines = true;
+    lineClearCounter = 0;
+    triggerLineClearFeedback();
+  }
+}
+
+function findFullRows() {
+  return board.reduce((fullRows, row, index) => {
+    if (row.every(Boolean)) {
+      fullRows.push(index);
+    }
+
+    return fullRows;
+  }, []);
+}
+
+function finishLineClear() {
+  const clearedRows = clearFullRows();
+  addScore(clearedRows);
+  isClearingLines = false;
+  clearingRows = [];
+  lineClearCounter = 0;
+  entryCounter = 0;
+}
+
+function triggerLineClearFeedback() {
+  if (typeof navigator.vibrate !== "function") {
+    return;
+  }
+
+  navigator.vibrate(35);
 }
 
 function spawnNextPiece() {
@@ -543,6 +605,9 @@ function resetGame() {
   dropInterval = 700;
   lockCounter = 0;
   entryCounter = 0;
+  isClearingLines = false;
+  clearingRows = [];
+  lineClearCounter = 0;
   score = 0;
   level = 1;
   isGameOver = false;
