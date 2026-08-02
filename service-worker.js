@@ -32,9 +32,20 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  event.respondWith(
-    caches.match(event.request).then((cachedResponse) => {
-      return cachedResponse || fetch(event.request);
-    })
-  );
+  if (event.request.mode === "navigate") {
+    event.respondWith(
+      fetch(event.request)
+        .then((response) => {
+          const responseToCache = response.clone();
+          caches.open(cacheName).then((cache) => cache.put("./index.html", responseToCache));
+          return response;
+        })
+        .catch(() => caches.match("./index.html"))
+    );
+    return;
+  }
+
+  event.respondWith(caches.match(event.request).then((cachedResponse) => {
+    return cachedResponse || fetch(event.request);
+  }));
 });
