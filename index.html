@@ -13,7 +13,7 @@
   <link rel="manifest" href="manifest.json">
   <link rel="icon" href="icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="icon.svg">
-  <link rel="stylesheet" href="style.css?v=36">
+  <link rel="stylesheet" href="style.css?v=40">
 </head>
 <body>
   <main class="game-shell">
@@ -112,6 +112,12 @@
       </div>
     </section>
   </main>
-  <script src="game.js?v=36"></script>
+  <!-- Порядок важен: конфигурация → рендер → движок → UI → управление → запуск. -->
+  <script src="game-config.js?v=40"></script>
+  <script src="game-renderer.js?v=40"></script>
+  <script src="game-engine.js?v=40"></script>
+  <script src="game-ui.js?v=40"></script>
+  <script src="game-controls.js?v=40"></script>
+  <script src="game.js?v=40"></script>
 </body>
 </html>
