@@ -1,4 +1,5 @@
 // Точка входа: Service Worker и первоначальный запуск игры.
+
 const canUseServiceWorker =
   window.location.protocol === "https:" ||
   window.location.hostname === "localhost" ||
